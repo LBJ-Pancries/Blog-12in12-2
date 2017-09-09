@@ -1070,3 +1070,95 @@ def destroy
   redirect_to posts_path
 end
 ```
+`git status`
+`git add `
+`git commit -am "edit and delete posts"`
+
+`rails g model Comment name:string body:text post:references`
+`rake db:migrate`
+修改文件 posts.model
+`has_many :commnets`
+修改文件 routes.rb
+```rb
+resources :posts do
+  resources :comments
+end
+```
+`rails g controller Commnets`
+`touch app/views/comments/_comment.html.erb`
+`touch app/views/comments/_form.html.erb`
+修改文件 comments.controller.rb
+```rb
+def create
+  @post = Post.find(params[:post_id])
+  @comment = @post.comments.create(params[:comment].permit(:name, :body))
+
+  redirect_to post_path(@post)
+end
+```
+修改文件 comment.html.erb
+```erb
+<div class="comment clearfix">
+  <div class="comment_content">
+    <p class="comment_name"><strong><%= comment.name %></strong></p>
+    <p class="comment_body"><%= comment.body %></p>
+    <p class="comment_time"><%= time_ago_in_words(comment.created_at) %> Ago</p>
+  </div>
+</div>
+```
+修改文件 form.html.erb
+```erb
+<%= form_for([@post, @post.comments.build]) do |f| %>
+  <p>
+    <%= f.label :name %>
+    <%= f.text_field :name %>
+  </p>
+
+  <p>
+    <%= f.label :body %>
+    <%= f.text_area :body %>
+  </p>
+  <br>
+  <p>
+    <%= f.submit %>
+  </p>
+<% end %>
+```
+修改文件 posts/show.html.erb
+```erb
+<div id="comments">
+  <h2><%= @post.comments.count %> Comments</h2>
+  <%= render @post.comments %>
+
+  <h3>Add a comment:</h3>
+  <%= render "comments/form" %>
+</div>
+```
+现在就可以留言了
+实作comment destroy action
+修改文件 comment.html.erb
+```erb
+<p><%= link_to 'Delete', [comment.post, comment],
+                method: :delete,
+                class: "button",
+                data: { confirm: "Are you sure?" }%>
+</p>
+```
+修改文件 comments.contoller.erb
+```erb
+def destroy
+  @post = Post.find(params[:post_id])
+  @comment = @post.comments.find(params[:id])
+  @comment.destroy
+
+  redirect_to post_path(@post)
+end
+```
+现在就可以删除comment了
+修改文件 posts.model.rb
+```rb
+has_many :comments, dependent: :destroy
+```
+`git status`
+`git add `
+`git comment -m "Add comments"`
