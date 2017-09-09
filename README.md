@@ -905,7 +905,7 @@ a {
 </html>
 `
 修改posts/new.html.erb
-`
+`erb
 <div id="page_wrapper">
   <h1>New Post</h1>
 
@@ -928,7 +928,7 @@ a {
 </div>
 `
 修改posts/edit.html.erb
-`
+`erb
 <div id="post_content">
   <h1 class="title">
     <%= @post.title %>
@@ -942,5 +942,45 @@ a {
     <%= @post.body %>
   </p>
 </div>
-
 `
+`git status``
+`git add .`
+`git commit -am "Styling and structure"`
+
+修改model/post.rb
+`rb
+class Post < ActiveRecord::Base
+  validates :title, presence: true, length: { minimum: 5 }
+  validates :body, presence: true
+end
+`
+修改posts.controller.rb
+```rb
+def new
+  @post = Post.new
+end
+
+def create
+  @post = Post.new(post_params)
+  if @post.save
+    redirect_to @post
+  else
+    render 'new'
+  end
+end
+```
+修改posts/new.html.erb
+```erb
+<%= form_for :post, url: posts_path do |f| %>
+  <% if @post.errors.any? %>
+    <div id="errors">
+      <h2><%= pluralize(@post.errors.count, "error")%> prevented this post from saving</h2>
+      <ul>
+        <% @post.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+<% end %>
+```
