@@ -1163,5 +1163,113 @@ has_many :comments, dependent: :destroy
 `git add `
 `git comment -m "Add comments"`
 
+实作About按钮
+修改文件 views/layouts/application.html.erb
+```erb
+<li><%= link_to "About", about_path %></li>
+```
+创建about action
 `rails g contoller pages`
 修改文件 pages.controller.rb
+```rb
+def about
+end
+```
+创建about页面
+`touch app/views/pages/about.html.erb`
+修改文件 about.html.erb
+```erb
+<div id="page_wrapper">
+	<div id="profile_image">
+		<%= image_tag "profile.jpeg" %>
+	</div>
+
+	<div id="content">
+		<h1>Hey, I'm Mackenzie Child</h1>
+		<p>Welcome to week 2 of my 12 Web Apps in 12 Weeks Challenge.</p>
+		<p>This week I built a blog in Rails 4. You're actually on the demo application right now. Cool stuff, right!.</p>
+		<p>If you'd like to follow along as I learn more Ruby on Rails, find me on Twitter <a href="http://twitter.com/mackenziechild">@MackenzieChild</a> or on the web at <a href="http://mackenziechild.me">mackenziechild.me</a>, and get my posts and exclusive content in your inbox by signing up for my newsletter <a href="http://eepurl.com/02olT">here</a>.</p>
+	</div>
+</div>
+```
+刷新页面，点击About
+
+优化页面，使页面上方的标签显示所在位置
+修改文件 layouts/application.html.erb
+```erb
+<% if current_page?(root_path) %>
+  <p>All Posts</p>
+<% elsif current_page?(about_path) %>
+  <p>About</p>
+<% else %>
+  <%= link_to "Back to All Posts", root_path %>
+<% end %>
+```
+
+实作devise
+`gem 'devise'`
+`bundle`
+`rails g devise:install`
+修改文件 config/environments/development.rb
+`config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }`
+加在end之上
+`rails g devise:views`
+`rails g devise User`
+`rake db:migrate`
+重启rails s
+在网址栏位输入http://localhost:3000/users/sign_up
+注册一个账号
+修改文件 views/devise/sessions/new.html.erb
+```erb
+<div id="page_wrapper"> #这个是调整页面布局的
+  <h2>Log in</h2>
+
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+  .....
+  <% end %>
+  <br>
+  <%= render "devise/shared/links" %>
+
+</div>
+```
+修改文件 posts.controller.rb
+```rb
+before_action :authenticate_user!, except: [:idex, :show]
+```
+修改文件 layous/application.html.erb
+```erb
+......
++  <% if !user_signed_in? %>
+    <p class="sign_in">Admin Login</p>
++  <% end %>
+......
++    <% if user_signed_in? %>
+      <div class="buttons">
+        <button class="button"><%= link_to "New post", new_post_path %></button>
+        <button class="button">Log Out</button>
+      </div>
++    <% end %>
+```
+修改文件 posts/show.html.erb
+```erb
+<p class="date">
+  Submitted <%= time_ago_in_words(@post.created_at) %> Ago
++  <% if user_signed_in? %>
+    | <%= link_to "Edit", edit_post_path(@post) %>
+    | <%= link_to "Delete", post_path(@post), method: :delete, data: { confirm: "Are you sure?"}%>
++  <% end %>
+</p>
+```
+修改文件 comments/comment.html.erb
+```erb
++ <% if user_signed_in? %>
+  <p><%= link_to 'Delete', [comment.post, comment],
+                  method: :delete,
+                  class: "button",
+                  data: { confirm: "Are you sure?" }%>
+  </p>
++ <% end %>
+```
+`git status`
+`git add `
+`git commit -am "Add devise and users"`
