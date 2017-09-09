@@ -984,3 +984,89 @@ end
   <% end %>
 <% end %>
 ```
+`git status`
+`git add `
+`git commit -am "add validation to post form"`
+
+添加文件
+`touch app/views/posts/edit.html.erb`
+`touch app/views/posts/_form.html.erb`
+修改文件 new.html.erb
+```erb
+<div id="page_wrapper">
+  <h1>New Post</h1>
+
+  <%= render 'form' %>
+</div>
+```
+修改文件 edit.html.erb
+```erb
+<div id="page_wrapper">
+  <h1>Edit Post</h1>
+
+  <%= render 'form' %>
+</div>
+```
+修改文件 form.html.erb
+```erb
+<%= form_for @post do |f| %>
+  <% if @post.errors.any? %>
+    <div id="errors">
+      <h2><%= pluralize(@post.errors.count, "error")%> prevented this post from saving</h2>
+      <ul>
+        <% @post.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+<% end %>
+
+<%= form_for :post, url: posts_path do |f|  %>
+  <p>
+    <%= f.label :title %><br>
+    <%= f.text_field :title %>
+  </p>
+
+  <p>
+    <%= f.label :body %><br>
+    <%= f.text_field :body %>
+  </p>
+
+  <p>
+    <%= f.submit %>
+  </p>
+
+<% end %>
+```
+修改文件 show.html.erb
+```erb
+<p class="date">
+  Submitted <%= time_ago_in_words(@post.created_at) %> Ago
+  | <%= link_to "Edit", edit_post_path(@post) %>
+  | <%= link_to "Delete", post_path(@post), method: :delete, data: { confirm: "Are you sure?"}%>
+</p>
+```
+修改文件 post.controller
+```rb
+def edit
+  @post = Post.find(params[:id])
+end
+
+def update
+  @post = Post.find(params[:id])
+
+  if @post.update(params[:post].permit(:title, :body))
+    redirect_to @post
+  else
+    render 'edit'
+  end
+end
+
+def destroy
+  @post = Post.find(params[:id])
+  @post.destroy
+
+  redirect_to posts_path
+end
+```
