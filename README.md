@@ -1162,3 +1162,6 @@ has_many :comments, dependent: :destroy
 `git status`
 `git add `
 `git comment -m "Add comments"`
+
+`rails g contoller pages`
+修改文件 pages.controller.rb
